@@ -1,0 +1,112 @@
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "secureremotedind.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "secureremotedind.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "secureremotedind.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "secureremotedind.selectorLabels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "secureremotedind.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+      - name: {{ .Chart.Name }}
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 10 }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        env:
+        - name: "DOCKER_HOST"
+          value: "tcp://localhost:2376"
+        - name: "DOCKER_TLS_VERIFY"
+          value: "1"
+        - name: "DOCKER_CERT_PATH"
+          value: "/certs/client"
+        - name: TINI_SUBREAPER
+          value: "true"
+        - name: DOCKERD_ROOTLESS_ROOTLESSKIT_FLAGS
+          value: "--pidns=true --cgroupns=true --utsns=true --ipcns=true --debug" #--net=slirp4netns --port-driver=slirp4netns 
+        imagePullPolicy: Always
+        args:
+          - "--mtu=1450"
+          - "--dns=10.43.0.10"
+          - "--rootless"
+          - "--debug"
+          # TODO args: lookup k8s dns service
+          #- "--exec-opt=native.cgroupdriver=systemd"
+        ports:
+        - containerPort: 2376
+          name: dind-tls
+          protocol: TCP
+        resources:
+          {{- toYaml .Values.resources | nindent 12 }}
+        volumeMounts:
+        - name: dind-certs-ca
+          mountPath: /certs/ca/
+        - name: dind-certs-server
+          mountPath: /certs/server
+        - name: dind-certs-client
+          mountPath: /certs/client
+      volumes:
+        - name: dind-certs-server
+          csi:
+            driver: csi.cert-manager.io
+            readOnly: true
+            volumeAttributes:
+              csi.cert-manager.io/issuer-name: "{{ include "secureremotedind.fullname" . }}-docker-ca-issuer"
+              csi.cert-manager.io/issuer-kind: "Issuer"
+              csi.cert-manager.io/dns-names: "localhost,docker,{{ include "secureremotedind.fullname" . }},{{ include "secureremotedind.fullname" . }}.{{ .Release.Namespace }},{{ include "secureremotedind.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local"
+              csi.cert-manager.io/key-usages: "server auth"
+              csi.cert-manager.io/ca-file: "ca.pem"
+              csi.cert-manager.io/certificate-file: "cert.pem"
+              csi.cert-manager.io/privatekey-file: "key.pem"
+              csi.cert-manager.io/fs-group: "1000"
+        - name: dind-certs-client
+          csi:
+            driver: csi.cert-manager.io
+            readOnly: true
+            volumeAttributes:
+              csi.cert-manager.io/issuer-name: "{{ include "secureremotedind.fullname" . }}-docker-ca-issuer"
+              csi.cert-manager.io/issuer-kind: "Issuer"
+              csi.cert-manager.io/dns-names: "localhost,docker,{{ include "secureremotedind.fullname" . }},{{ include "secureremotedind.fullname" . }}.{{ .Release.Namespace }},{{ include "secureremotedind.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local"
+              csi.cert-manager.io/key-usages: "client auth"
+              csi.cert-manager.io/ca-file: "ca.pem"
+              csi.cert-manager.io/certificate-file: "cert.pem"
+              csi.cert-manager.io/privatekey-file: "key.pem"
+              csi.cert-manager.io/fs-group: "1000"
+        - name: dind-certs-ca
+          secret: 
+            secretName: {{ include "secureremotedind.fullname" . }}-docker-ca-secret
+            items:
+            - key: tls.key
+              path: key.pem
+            - key: tls.crt
+              path: cert.pem
+            - key: ca.crt
+              path: ca.pem
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

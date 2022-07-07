@@ -1,0 +1,6 @@
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ include "secureremotedind.fullname" . }}-issuer
+spec:
+  selfSigned: {}

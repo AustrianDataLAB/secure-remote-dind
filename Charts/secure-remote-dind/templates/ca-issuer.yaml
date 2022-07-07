@@ -1,0 +1,12 @@
+---
+
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ include "secureremotedind.fullname" . }}-docker-ca-issuer
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "secureremotedind.labels" . | nindent 4 }}
+spec:
+  ca:
+    secretName: {{ include "secureremotedind.fullname" . }}-docker-ca-secret

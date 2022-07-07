@@ -1,0 +1,29 @@
+---
+
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "secureremotedind.fullname" . }}-docker-ca
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "secureremotedind.labels" . | nindent 4 }}
+spec:
+  isCA: true
+  commonName: docker
+  secretName: {{ include "secureremotedind.fullname" . }}-docker-ca-secret
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  issuerRef:
+    name: {{ include "secureremotedind.fullname" . }}-clusterissuer
+    kind: ClusterIssuer
+  secretTemplate:
+    {{- with .Values.serviceAccount.annotations }}
+    annotations:
+      {{- toYaml . | nindent 8 }}
+    {{- end }}
+    labels:
+    {{- with .Values.serviceAccount.labels }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+      {{- include "secureremotedind.labels" . | nindent 4 }}

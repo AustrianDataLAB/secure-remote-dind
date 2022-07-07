@@ -1,0 +1,7 @@
+apiVersion: v2
+name: secureremotedind
+description: A HelmChart to provide a secure rootless remote dind service for other deployments.
+type: application
+version: 0.0.1
+appVersion: "0.0.1"
+dependencies: []

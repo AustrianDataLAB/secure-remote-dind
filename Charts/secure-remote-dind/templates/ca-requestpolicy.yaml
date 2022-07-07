@@ -1,0 +1,47 @@
+{{- if .Values.policy.enabled -}}
+
+apiVersion: policy.cert-manager.io/v1alpha1
+kind: CertificateRequestPolicy
+metadata:
+  name: {{ include "secureremotedind.fullname" . }}-policy
+spec:
+  selector:
+    issuerRef:
+      name: {{ include "secureremotedind.fullname" . }}-docker-ca-issuer
+      kind: "Issuer"
+      group: "cert-manager.io"
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "secureremotedind.fullname" . }}-policy
+rules:
+  - apiGroups: ["policy.cert-manager.io"]
+    resources: ["certificaterequestpolicies"]
+    verbs: ["use"]
+    # Name of the CertificateRequestPolicies to be used.
+    resourceNames:
+    - {{ include "secureremotedind.fullname" . }}-policy
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "secureremotedind.fullname" . }}-policy
+roleRef:
+# ClusterRole or Role _must_ be bound to a user for the policy to be considered.
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "secureremotedind.fullname" . }}-policy
+subjects:
+# The users who should be bound to the policies defined.
+# Note that in the case of users creating Certificate resources, cert-manager
+# is the entity that is creating the actual CertificateRequests, and so the
+# cert-manager controller's
+# Service Account should be bound instead.
+- kind: ServiceAccount
+  name: {{ include "secureremotedind.serviceAccountName" . }}
+  namespace: {{ .Release.Namespace }}
+
+{{- end }}
