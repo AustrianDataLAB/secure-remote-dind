@@ -13,5 +13,5 @@ helm upgrade --install \
   #--set webhook.securePort="30001" \
   #--set webhook.hostNetwork=true \
 
-helm upgrade -i -n cert-manager cert-manager-approver-policy jetstack/cert-manager-approver-policy --wait
+#helm upgrade -i -n cert-manager cert-manager-approver-policy jetstack/cert-manager-approver-policy --wait
 helm upgrade -i -n cert-manager cert-manager-csi-driver jetstack/cert-manager-csi-driver --wait
