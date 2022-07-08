@@ -10,6 +10,12 @@ See the [examples directory](/examples/access-dind.md) for the demo deployment.
 
 ![secureremotedind.drawio](./img/secureremotedind.drawio.svg)
 
+## Motivation
+
+We needed to have rootless docker-in-docker support for our CI/CD pipelines without giving privileged access to the runner pods.
+
 ## Future Work
 
-Create a ClusterIssuer with a CertificateRequestPolicy to allow multiple namespaces to authorize against the dind service.
+- Create a ClusterIssuer with a CertificateRequestPolicy to allow multiple namespaces to authorize against the dind service.
+- Metrics export for the dind service.
+- Health endpoint for the dind service.

@@ -61,10 +61,24 @@ Create the name of the service account to use
 {{- end }}
 {{- end }}
 
+{{/*
+Get the IP of the CoreDNS service
+*/}}
+{{ define "dnsServiceIP" }}
+{{- range $index, $service := (lookup "v1" "Service" "kube-system" "").items -}}
+  {{- if hasKey $service.metadata.labels "kubernetes.io/name" -}}
+    {{- range $index, $label := $service.metadata.labels -}}
+      {{- if eq $label "CoreDNS" -}}
+        {{- $service.spec.clusterIP -}}
+      {{- end -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+{{ end }}
 
 {{/*
 Create the imagePullSecret of the deployment to use
 */}}
-{{- define "imagePullSecret" }}
-{{- printf "{\"auths\":{\"%s\":{\"username\":\"%s\",\"password\":\"%s\",\"email\":\"%s\",\"auth\":\"%s\"}}}" .registry .username .password .email (printf "%s:%s" .username .password | b64enc) | b64enc }}
-{{- end }}
+{{- define "imagePullSecret" -}}
+{{- printf "{\"auths\":{\"%s\":{\"username\":\"%s\",\"password\":\"%s\",\"email\":\"%s\",\"auth\":\"%s\"}}}" .registry .username .password .email (printf "%s:%s" .username .password | b64enc) | b64enc -}}
+{{- end -}}

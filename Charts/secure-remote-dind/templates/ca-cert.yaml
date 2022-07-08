@@ -24,6 +24,6 @@ spec:
     {{- end }}
     labels:
     {{- with .Values.serviceAccount.labels }}
-      {{- toYaml . | nindent 4 }}
+      {{- toYaml . | nindent 8 }}
     {{- end }}
-      {{- include "secureremotedind.labels" . | nindent 4 }}
+      {{- include "secureremotedind.labels" . | nindent 8 }}

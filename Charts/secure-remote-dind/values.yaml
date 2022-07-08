@@ -32,10 +32,10 @@ securityContext:
   privileged: true #TODO: find capabilities used for dind
   runAsNonRoot: true
   runAsUser: 1000
+  # readOnlyRootFilesystem: true
   # capabilities:
   #   drop:
   #   - ALL
-  # readOnlyRootFilesystem: true
 
 service:
   type: ClusterIP

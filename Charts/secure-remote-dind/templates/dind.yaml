@@ -40,14 +40,20 @@ spec:
           value: "true"
         - name: DOCKERD_ROOTLESS_ROOTLESSKIT_FLAGS
           value: "--pidns=true --cgroupns=true --utsns=true --ipcns=true --debug" #--net=slirp4netns --port-driver=slirp4netns 
+        # TODO rootlesskit:
+        # improve network!!
         imagePullPolicy: Always
         args:
           - "--mtu=1450"
-          - "--dns=10.43.0.10"
           - "--rootless"
           - "--debug"
-          # TODO args: lookup k8s dns service
-          #- "--exec-opt=native.cgroupdriver=systemd"
+          {{ with (include "dnsServiceIP" .) }}
+          - "{{ printf "--dns=%s" . }}"
+          {{ end }}
+          # TODO args:
+          # - improve k8s dns service lookup 
+          # make cgroups v2 work with rootlesskit: https://github.com/moby/moby/issues/42910
+          # "--exec-opt=native.cgroupdriver=systemd"
         ports:
         - containerPort: 2376
           name: dind-tls
@@ -57,10 +63,13 @@ spec:
         volumeMounts:
         - name: dind-certs-ca
           mountPath: /certs/ca/
+          readOnly: true
         - name: dind-certs-server
           mountPath: /certs/server
+          readOnly: true
         - name: dind-certs-client
           mountPath: /certs/client
+          readOnly: true
       volumes:
         - name: dind-certs-server
           csi:
@@ -69,6 +78,7 @@ spec:
             volumeAttributes:
               csi.cert-manager.io/issuer-name: "{{ include "secureremotedind.fullname" . }}-docker-ca-issuer"
               csi.cert-manager.io/issuer-kind: "Issuer"
+              #TODO check if dns-names are secure
               csi.cert-manager.io/dns-names: "localhost,docker,{{ include "secureremotedind.fullname" . }},{{ include "secureremotedind.fullname" . }}.{{ .Release.Namespace }},{{ include "secureremotedind.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local"
               csi.cert-manager.io/key-usages: "server auth"
               csi.cert-manager.io/ca-file: "ca.pem"
@@ -82,6 +92,7 @@ spec:
             volumeAttributes:
               csi.cert-manager.io/issuer-name: "{{ include "secureremotedind.fullname" . }}-docker-ca-issuer"
               csi.cert-manager.io/issuer-kind: "Issuer"
+              #TODO check if dns-names are secure
               csi.cert-manager.io/dns-names: "localhost,docker,{{ include "secureremotedind.fullname" . }},{{ include "secureremotedind.fullname" . }}.{{ .Release.Namespace }},{{ include "secureremotedind.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local"
               csi.cert-manager.io/key-usages: "client auth"
               csi.cert-manager.io/ca-file: "ca.pem"
