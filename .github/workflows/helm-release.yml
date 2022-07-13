@@ -5,6 +5,7 @@ on:
     branches:
       - main
 
+## REF: https://faun.pub/semantic-version-of-helm-charts-in-github-actions-using-conventional-commits-ce5e0a587ce8
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -30,6 +31,7 @@ jobs:
         uses: 'phips28/gh-action-bump-version@master'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PACKAGEJSON_DIR:  'Charts/secure-remote-dind'
         with:
           skip-tag:  'true'
           commit-message: 'CI: Bump Helm chart version to {{version}}'
