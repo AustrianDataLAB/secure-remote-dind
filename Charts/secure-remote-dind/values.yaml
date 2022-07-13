@@ -22,8 +22,6 @@ serviceAccount:
   # If not set and create is true, a name is generated using the fullname template
   name: ""
 
-podAnnotations: {}
-
 podSecurityContext:
   runAsNonRoot: true
   runAsUser: 1000
@@ -52,6 +50,8 @@ resources: {}
   # requests:
   #   cpu: 100m
   #   memory: 128Mi
+
+podAnnotations: {}
 
 nodeSelector: {}
 
