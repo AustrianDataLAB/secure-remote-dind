@@ -14,14 +14,14 @@ jobs:
         uses: 'actions/checkout@v2'
         with:
           ref: ${{ github.ref }}
-          fetch-depth: 0
+          fetch-depth: 2
 
       - name: Get specific changed files                  # To check if any files changed in charts/secure-remote-dind directory
         id: changed-files-specific
         uses: tj-actions/changed-files@v23.1
         with:
           files: |
-            charts/secure-remote-dind/**
+            'charts/secure-remote-dind/**/*'
 
       - name: Automated Version Bump                      # Bump version in package.json
         if: steps.changed-files-specific.outputs.any_modified == 'true'
@@ -33,13 +33,6 @@ jobs:
           skip-tag:  'true'
           commit-message: 'CI: Bump Helm chart version to {{version}}'
 
-      - name: Get app version                               # (Optional) To get the version of the main docker image used in Helm chart pod
-        if: steps.changed-files-specific.outputs.any_modified == 'true'
-        id: package-version
-        uses: martinbeentjes/npm-get-version-action@master
-        with:
-          path: ./
-
       - name: update Chart.yaml                              # Update chart.yaml with new version and other fields
         if: steps.changed-files-specific.outputs.any_modified == 'true'
         working-directory: charts/secure-remote-dind
@@ -48,7 +41,7 @@ jobs:
           name: ${GITHUB_REPOSITORY#*/}
           apiVersion: v2
           version: ${{ steps.version-bump.outputs.newTag }}
-          appVersion: ${{ steps.package-version.outputs.current-version}}
+          appVersion: ${{ steps.version-bump.outputs.newTag }}
           EOF
 
       - name: commit the new Chart.yml                   # commit the new Chart.yaml to main branch
