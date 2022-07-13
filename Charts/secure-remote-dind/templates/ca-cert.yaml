@@ -15,8 +15,8 @@ spec:
     algorithm: ECDSA
     size: 256
   issuerRef:
-    name: {{ include "secureremotedind.fullname" . }}-clusterissuer
-    kind: ClusterIssuer
+    name: {{ include "secureremotedind.fullname" . }}-issuer
+    kind: Issuer
   secretTemplate:
     {{- with .Values.serviceAccount.annotations }}
     annotations:

@@ -1,0 +1,47 @@
+runners:
+  privileged: false
+  runUntagged: false
+  tags: "builder-demo,demo"
+  name: "builder-demo"
+  # https://gitlab.com/gitlab-org/charts/gitlab-runner/blob/main/values.yaml
+  # tpl: https://helm.sh/docs/howto/charts_tips_and_tricks/#using-the-tpl-function
+  # runner configuration: https://docs.gitlab.com/runner/configuration/advanced-configuration.html
+  config: |
+
+    [[runners]]
+
+      environment = [
+        "DOCKER_HOST=tcp://builder-demo-secureremotedind:2376", #ADJUST ACCORDINGLY
+        "DOCKER_TLS_CERTDIR=/usr/share/certs",
+        "DOCKER_TLS_VERIFY=1",
+        "DOCKER_CERT_PATH=${DOCKER_TLS_CERTDIR}/docker"
+      ]
+
+      cache_dir = "/tmp/gitlab-runner/cache"
+      [runners.cache]
+        Type = "s3"
+        Shared = true
+        [runners.cache.s3]
+          ServerAddress = "minio"
+          AccessKey = "cache-user-1"
+          SecretKey = "CACHE_USER_PASS_XYZ_123"
+          BucketName = "cache-bucket-1"
+          Insecure = true
+
+      [runners.kubernetes]
+        namespace = "{{.Release.Namespace}}"
+
+        [[runners.kubernetes.volumes.csi]]
+          name = "dind-certs-client"
+          mount_path = "/usr/share/certs/docker"
+          driver = "csi.cert-manager.io"
+          read_only = true
+          [runners.kubernetes.volumes.csi.volume_attributes]
+            "csi.cert-manager.io/issuer-name" = "{{ include "secbuild.fullname" . }}-docker-ca-issuer"
+            "csi.cert-manager.io/issuer-kind" = "Issuer"
+            "csi.cert-manager.io/dns-names" = "localhost,docker,builder-secureremotedind,builder-secureremotedind.{{ .Release.Namespace }},builder-secureremotedind.{{ .Release.Namespace }}.svc.cluster.local" #ADJUST ACCORDINGLY
+            "csi.cert-manager.io/key-usages" = "client auth"
+            "csi.cert-manager.io/ca-file" = "ca.pem"
+            "csi.cert-manager.io/certificate-file" = "cert.pem"
+            "csi.cert-manager.io/privatekey-file" = "key.pem"
+            "csi.cert-manager.io/fs-group" = "1001"

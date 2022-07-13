@@ -1,0 +1,64 @@
+name: Helm-Release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code                   # Checkout source code
+        uses: 'actions/checkout@v2'
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+
+      - name: Get specific changed files                  # To check if any files changed in charts/secure-remote-dind directory
+        id: changed-files-specific
+        uses: tj-actions/changed-files@v14.7
+        with:
+          files: |
+            charts/secure-remote-dind
+
+      - name: Automated Version Bump                      # Bump version in package.json
+        if: steps.changed-files-specific.outputs.any_modified == 'true'
+        id: version-bump
+        uses: 'phips28/gh-action-bump-version@master'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          skip-tag:  'true'
+          commit-message: 'CI: Bump Helm chart version to {{version}}'
+
+      - name: Get app version                               # (Optional) To get the version of the main docker image used in Helm chart pod
+        if: steps.changed-files-specific.outputs.any_modified == 'true'
+        id: package-version
+        uses: martinbeentjes/npm-get-version-action@master
+        with:
+          path: ./
+
+      - name: update Chart.yaml                              # Update chart.yaml with new version and other fields
+        if: steps.changed-files-specific.outputs.any_modified == 'true'
+        working-directory: charts/secure-remote-dind
+        run: |
+          cat <<EOF > Chart.yaml
+          name: ${GITHUB_REPOSITORY#*/}
+          apiVersion: v2
+          version: ${{ steps.version-bump.outputs.newTag }}
+          appVersion: ${{ steps.package-version.outputs.current-version}}
+          EOF
+
+      - name: commit the new Chart.yml                   # commit the new Chart.yaml to main branch
+        if: steps.changed-files-specific.outputs.any_modified == 'true'
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Automated Change
+
+      - name: Run chart-releaser                          # Publishes the helm chart to to helm registry (default is GitHub pages)
+        if: steps.changed-files-specific.outputs.any_modified == 'true'
+        uses: helm/chart-releaser-action@v1.4.0
+        env:
+          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"

@@ -1,5 +1,5 @@
 apiVersion: v2
-name: secureremotedind
+name: secure-remote-dind
 description: A HelmChart to provide a secure rootless remote dind service for other deployments.
 type: application
 version: 0.0.1

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+helm repo add jetstack https://charts.jetstack.io --force-update 
+
 helm upgrade --install \
   cert-manager jetstack/cert-manager \
   --namespace cert-manager \
@@ -7,11 +9,21 @@ helm upgrade --install \
   --version v1.9.0-beta.1 \
   --set installCRDs=true \
   --set global.leaderElection.namespace=cert-manager \
+  --set extraArgs='{--enable-certificate-owner-ref=true,--controllers="*\,-certificaterequests-approver" }' \
   --wait
 
-  #--set extraArgs={--controllers='*\,-certificaterequests-approver'} \
+  #--set extraArgs={} \
   #--set webhook.securePort="30001" \
   #--set webhook.hostNetwork=true \
 
-#helm upgrade -i -n cert-manager cert-manager-approver-policy jetstack/cert-manager-approver-policy --wait
-helm upgrade -i -n cert-manager cert-manager-csi-driver jetstack/cert-manager-csi-driver --wait
+
+helm upgrade --install \
+  cert-manager-csi-driver jetstack/cert-manager-csi-driver \
+  --namespace cert-manager \
+  --wait
+
+
+helm upgrade --install \
+  cert-manager-approver-policy jetstack/cert-manager-approver-policy \
+  --namespace cert-manager \
+  --wait

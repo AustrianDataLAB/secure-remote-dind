@@ -17,5 +17,6 @@ We needed to have rootless docker-in-docker support for our CI/CD pipelines with
 ## Future Work
 
 - Create a ClusterIssuer with a CertificateRequestPolicy to allow multiple namespaces to authorize against the dind service.
+- Remove PSPs.
 - Metrics export for the dind service.
 - Health endpoint for the dind service.
