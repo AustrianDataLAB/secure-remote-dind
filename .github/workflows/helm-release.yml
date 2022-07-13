@@ -22,7 +22,7 @@ jobs:
         with:
           since_last_remote_commit: true
           files: |
-            charts/secure-remote-dind
+            Charts/secure-remote-dind/*
 
       - name: Automated Version Bump                      # Bump version in package.json
         if: steps.changed-files-specific.outputs.any_modified == 'true'
