@@ -3,5 +3,5 @@ name: secure-remote-dind
 description: A HelmChart to provide a secure, rootless and remote dind service to build Docker images via a TCP connection.
 type: application
 version: 0.0.1
-appVersion: 0.0.1
+appVersion: 0.0.3
 dependencies: []
