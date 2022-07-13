@@ -7,11 +7,11 @@ A Helm Chart containing: [dind-rootless](https://docs.docker.com/engine/security
 ### From inside the docker-in-docker deployment
 
 ```sh
-export pod_name=$(kubectl get pod \
+export POD_NAME=$(kubectl get pod \
   --selector=app.kubernetes.io/name=secureremotedind \
   --no-headers -o custom-columns=":metadata.name")
 
-kubectl exec -it $pod_name -- docker info
+kubectl exec -it $POD_NAME -- docker info
 ```
 
 ### From Localhost
