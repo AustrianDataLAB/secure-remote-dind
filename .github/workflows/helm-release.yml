@@ -18,7 +18,7 @@ jobs:
 
       - name: Get specific changed files                  # To check if any files changed in charts/secure-remote-dind directory
         id: changed-files-specific
-        uses: tj-actions/changed-files@v23.1
+        uses: tj-actions/changed-files@v14.5
         with:
           since_last_remote_commit: true
           files: |
