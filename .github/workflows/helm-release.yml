@@ -36,14 +36,10 @@ jobs:
 
       - name: update Chart.yaml                              # Update chart.yaml with new version and other fields
         if: steps.changed-files-specific.outputs.any_modified == 'true'
-        working-directory: charts/secure-remote-dind
+        working-directory: Charts/secure-remote-dind
         run: |
-          cat <<EOF > Chart.yaml
-          name: ${GITHUB_REPOSITORY#*/}
-          apiVersion: v2
-          version: ${{ steps.version-bump.outputs.newTag }}
-          appVersion: ${{ steps.version-bump.outputs.newTag }}
-          EOF
+          sed -i'.oldVersion' -e "/^version:/s;[^ ]*$;${{ steps.version-bump.outputs.newTag }};" Chart.yaml
+          sed -i'.oldAppVersion' -e "/^appVersion:/s;[^ ]*$;${{ steps.version-bump.outputs.newTag }};" Chart.yaml
 
       - name: commit the new Chart.yml                   # commit the new Chart.yaml to main branch
         if: steps.changed-files-specific.outputs.any_modified == 'true'
