@@ -21,7 +21,7 @@ jobs:
         uses: tj-actions/changed-files@v23.1
         with:
           files: |
-            charts/secure-remote-dind
+            charts/secure-remote-dind/**
 
       - name: Automated Version Bump                      # Bump version in package.json
         if: steps.changed-files-specific.outputs.any_modified == 'true'
