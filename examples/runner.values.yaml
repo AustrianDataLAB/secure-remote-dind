@@ -37,7 +37,7 @@ runners:
           driver = "csi.cert-manager.io"
           read_only = true
           [runners.kubernetes.volumes.csi.volume_attributes]
-            "csi.cert-manager.io/issuer-name" = "{{ include "secbuild.fullname" . }}-docker-ca-issuer"
+            "csi.cert-manager.io/issuer-name" = "builder-secureremotedind-docker-ca-issuer"
             "csi.cert-manager.io/issuer-kind" = "Issuer"
             "csi.cert-manager.io/dns-names" = "localhost,docker,builder-secureremotedind,builder-secureremotedind.{{ .Release.Namespace }},builder-secureremotedind.{{ .Release.Namespace }}.svc.cluster.local" #ADJUST ACCORDINGLY
             "csi.cert-manager.io/key-usages" = "client auth"
