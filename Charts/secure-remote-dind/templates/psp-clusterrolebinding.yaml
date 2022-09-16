@@ -6,7 +6,7 @@ metadata:
   name: {{ include "secureremotedind.fullname" . }}-psp
 roleRef:
   kind: ClusterRole
-  name: secure-remote-dind-psp
+  name: {{ include "secureremotedind.fullname" . }}-psp
   apiGroup: rbac.authorization.k8s.io
 subjects:
 - kind: ServiceAccount

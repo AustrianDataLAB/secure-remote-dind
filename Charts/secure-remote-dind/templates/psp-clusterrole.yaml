@@ -2,12 +2,12 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: secure-remote-dind-psp
+  name: {{ include "secureremotedind.fullname" . }}-psp
 rules:
 - apiGroups:
   - policy
   resourceNames:
-  - secure-remote-dind-psp
+  - {{ include "secureremotedind.fullname" . }}-psp
   resources:
   - podsecuritypolicies
   verbs:

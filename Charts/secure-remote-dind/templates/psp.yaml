@@ -4,7 +4,7 @@ kind: PodSecurityPolicy
 metadata:
   annotations:
     seccomp.security.alpha.kubernetes.io/allowedProfileNames: '*'
-  name: secure-remote-dind-psp
+  name: {{ include "secureremotedind.fullname" . }}-psp
 spec:
   allowPrivilegeEscalation: true
   allowedCapabilities:
