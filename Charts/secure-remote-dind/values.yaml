@@ -1,8 +1,8 @@
 image:
-  repository: docker
+  repository: ghcr.io/austriandatalab/secure-remote-dind
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: 20.10.17-dind-rootless
+  tag: main
 
 policy:
  enabled: false

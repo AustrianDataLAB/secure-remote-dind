@@ -38,19 +38,11 @@ spec:
         - name: TINI_SUBREAPER
           value: "true"
         - name: DOCKERD_ROOTLESS_ROOTLESSKIT_FLAGS
-          value: "--pidns=true --cgroupns=true --utsns=true --ipcns=true --debug" #--net=slirp4netns --port-driver=slirp4netns 
-        # TODO rootlesskit:
-        # improve network!!
-        imagePullPolicy: Always
+          value: "--pidns=true --cgroupns=true --utsns=true --ipcns=true --net=slirp4netns --port-driver=slirp4netns"
+        imagePullPolicy: "{{ .Values.image.pullPolicy }}"
         args:
-          - "--mtu=1450"
-          - "--rootless"
           - "--debug"
-          {{ with (include "dnsServiceIP" .) }}
-          - "{{ printf "--dns=%s" . }}"
-          {{ end }}
           # TODO args:
-          # - improve k8s dns service lookup 
           # make cgroups v2 work with rootlesskit: https://github.com/moby/moby/issues/42910
           # "--exec-opt=native.cgroupdriver=systemd"
         ports:
