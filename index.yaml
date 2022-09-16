@@ -2,6 +2,17 @@ apiVersion: v1
 entries:
   secure-remote-dind:
   - apiVersion: v2
+    appVersion: 0.0.3
+    created: "2022-09-16T23:16:40.241842487Z"
+    description: A HelmChart to provide a secure, rootless and remote dind service
+      to build Docker images via a TCP connection.
+    digest: 9af5a073f01e5a9109b8bf028983cc515135693d1df054b3a91877c1c493b158
+    name: secure-remote-dind
+    type: application
+    urls:
+    - https://github.com/AustrianDataLAB/secure-remote-dind/releases/download/secure-remote-dind-0.0.3/secure-remote-dind-0.0.3.tgz
+    version: 0.0.3
+  - apiVersion: v2
     appVersion: 0.0.2
     created: "2022-09-16T22:55:52.561371926Z"
     description: A HelmChart to provide a secure, rootless and remote dind service
@@ -23,4 +34,4 @@ entries:
     urls:
     - https://github.com/AustrianDataLAB/secure-remote-dind/releases/download/secure-remote-dind-0.0.1/secure-remote-dind-0.0.1.tgz
     version: 0.0.1
-generated: "2022-09-16T22:55:52.561380326Z"
+generated: "2022-09-16T23:16:40.241854587Z"
