@@ -43,9 +43,9 @@ runners:
 
       environment = [
         "DOCKER_HOST=tcp://${DEMO_NAME}-secure-remote-dind:2376",
-        "DOCKER_TLS_CERTDIR=/usr/share/certs",
         "DOCKER_TLS_VERIFY=1",
-        "DOCKER_CERT_PATH=${DOCKER_TLS_CERTDIR}/docker",
+        "DOCKER_TLS_CERTDIR=/usr/share/certs",
+        "DOCKER_CERT_PATH=/usr/share/certs/docker",
         "HOME=/home/gitlab-runner"
       ]
 
