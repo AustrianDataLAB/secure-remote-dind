@@ -1,28 +1,60 @@
-runners:
-  privileged: false
-  runUntagged: false
-  tags: "builder-demo,demo"
-  name: "builder-demo"
-  # https://gitlab.com/gitlab-org/charts/gitlab-runner/blob/main/values.yaml
-  # tpl: https://helm.sh/docs/howto/charts_tips_and_tricks/#using-the-tpl-function
-  # runner configuration: https://docs.gitlab.com/runner/configuration/advanced-configuration.html
-  config: |
+metrics:
+  enabled: false
+rbac:
+  create: true
+  clusterWideAccess: false
+  rules:
+  - resources:
+      - pods
+      - secrets
+      - configmaps
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - patch
+      - update
+      - delete
+  - resources:
+      - serviceaccounts
+    verbs:
+      - get
+      - list
+      - watch
+  - resources:
+      - pods/exec
+      - pods/attach
+    verbs:
+      - create
+      - patch
+      - delete
 
+runners:
+  name: "builder-demo"
+  #serviceAccountName: builder-demo-workload-id
+  tags: "builder-demo,demo"
+  privileged: false
+  runUntagged: true
+  protected: false
+
+  config: |
     [[runners]]
 
       environment = [
-        "DOCKER_HOST=tcp://builder-demo-secureremotedind:2376", #ADJUST ACCORDINGLY
+        "DOCKER_HOST=tcp://${DEMO_NAME}-secure-remote-dind:2376",
         "DOCKER_TLS_CERTDIR=/usr/share/certs",
         "DOCKER_TLS_VERIFY=1",
-        "DOCKER_CERT_PATH=${DOCKER_TLS_CERTDIR}/docker"
+        "DOCKER_CERT_PATH=${DOCKER_TLS_CERTDIR}/docker",
+        "HOME=/home/gitlab-runner"
       ]
 
-      cache_dir = "/tmp/gitlab-runner/cache"
+      cache_dir = "/cache"
       [runners.cache]
         Type = "s3"
         Shared = true
         [runners.cache.s3]
-          ServerAddress = "minio"
+          ServerAddress = "minio:9000"
           AccessKey = "cache-user-1"
           SecretKey = "CACHE_USER_PASS_XYZ_123"
           BucketName = "cache-bucket-1"
@@ -31,17 +63,50 @@ runners:
       [runners.kubernetes]
         namespace = "{{.Release.Namespace}}"
 
+        image = "docker:git"
+        helper_image = "registry.gitlab.com/gitlab-org/ci-cd/gitlab-runner-ubi-images/gitlab-runner-helper-ocp:main"
+        poll_interval = 3
+        pull_policy = ["if-not-present"]
+
+        [[runners.kubernetes.volumes.empty_dir]]
+          name = "home"
+          mount_path = "/home/gitlab-runner"
+          medium = "Memory"
+        [[runners.kubernetes.volumes.empty_dir]]
+          name = "builds"
+          mount_path = "/builds"
+          medium = "Memory"
+        [[runners.kubernetes.volumes.empty_dir]]
+          name = "cache"
+          mount_path = "/cache"
+          medium = "Memory"
         [[runners.kubernetes.volumes.csi]]
           name = "dind-certs-client"
           mount_path = "/usr/share/certs/docker"
           driver = "csi.cert-manager.io"
           read_only = true
           [runners.kubernetes.volumes.csi.volume_attributes]
-            "csi.cert-manager.io/issuer-name" = "builder-secureremotedind-docker-ca-issuer"
+            "csi.cert-manager.io/issuer-name" = "${DEMO_NAME}-secure-remote-dind-docker-ca-issuer"
             "csi.cert-manager.io/issuer-kind" = "Issuer"
-            "csi.cert-manager.io/dns-names" = "localhost,docker,builder-secureremotedind,builder-secureremotedind.{{ .Release.Namespace }},builder-secureremotedind.{{ .Release.Namespace }}.svc.cluster.local" #ADJUST ACCORDINGLY
+            "csi.cert-manager.io/dns-names" = "localhost,docker,${DEMO_NAME}-secure-remote-dind"
             "csi.cert-manager.io/key-usages" = "client auth"
             "csi.cert-manager.io/ca-file" = "ca.pem"
             "csi.cert-manager.io/certificate-file" = "cert.pem"
             "csi.cert-manager.io/privatekey-file" = "key.pem"
             "csi.cert-manager.io/fs-group" = "1001"
+    
+
+        [runners.kubernetes.pod_security_context]
+          run_as_non_root = true
+          run_as_user = 1001
+          run_as_group = 1001
+          fs_group = 1001
+        [runners.kubernetes.build_container_security_context]
+          run_as_user = 1001
+          run_as_group = 1001
+        [runners.kubernetes.helper_container_security_context]
+          run_as_user = 1001
+          run_as_group = 1001
+        [runners.kubernetes.service_container_security_context]
+          run_as_user = 1001
+          run_as_group = 1001
