@@ -1,4 +1,4 @@
-FROM docker:rc-dind-rootless
+FROM docker:dind-rootless
 
 USER root
 
